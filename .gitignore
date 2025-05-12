@@ -1,0 +1,15 @@
+terraform.tfvars
+__pycache__/
+.pyc
+.env
+.venv/
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+terraform.tfvars
+.pem
+
+output.xlsx
+jornada_quiniela.xlsx

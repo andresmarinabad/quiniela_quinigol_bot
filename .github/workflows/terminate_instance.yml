@@ -1,0 +1,36 @@
+name: Deploy EC2 Python with AutoScaling
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'infra/**'
+      - '.github/**'
+      - './**'
+      - 'docs/**'
+
+jobs:
+  deploy:
+    name: Telegram Bot Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Terminate existing EC2 instance
+        run: |
+          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=*quiniela-bot*" "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[*].InstanceId" --output text)
+
+          if [ -n "$INSTANCE_ID" ]; then
+            echo "Terminating instance $INSTANCE_ID"
+            aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+          else
+            echo "No running instance found."
+          fi
