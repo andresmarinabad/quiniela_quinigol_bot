@@ -3,13 +3,17 @@ import os
 import boto3
 import logging
 import watchtower
-from api import generar_nueva_plantilla_jornada, obtener_resultado_jornada_actual_pd
-from telegram import Update, Document
+from api import genera_mensaje_nueva_jornada, carga_apuestas_jugador
+
+from telegram import Update, Document, error
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-esperando_archivo = set()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+apuestas = {}
+
+responsabe_id = None
 
 # Config logger for CloudWatch
 logger = logging.getLogger("quiniela_quinigol_bot")
@@ -17,42 +21,62 @@ logger.setLevel(logging.INFO)
 boto3_client=boto3.client("logs", region_name="eu-west-1")
 logger.addHandler(watchtower.CloudWatchLogHandler(log_group_name="QuiniBot", boto3_client=boto3_client))
 
-async def descargar_plantilla(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    generar_nueva_plantilla_jornada()
-    logger.info(f"Descargar plantilla")
-    await update.message.reply_document(document=open('output.xlsx', "rb"), filename="quiniela_quinigol.xlsx")
-
 async def nueva_jornada(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    esperando_archivo.add(update.effective_user.id)
-    logger.info(f"Nueva jornada")
-    await update.message.reply_text("Envíame el archivo Excel (formato .xlsx o .xls).")
+    global responsabe_id
+    global apuestas
+    apuestas = {}
+    responsabe_id = update.effective_user.id
+    user_name = update.effective_user.full_name
+    logger.info(f"Se inicia jornada por {user_name}")
+    await update.message.reply_text(f"Hola {user_name}, eres el responsable esta jornada")
+    await update.message.reply_text(f"A continuación te adjunto la plantilla con la información que necesito que cada uno me envie por privado")
+    quiniela, quinigol = genera_mensaje_nueva_jornada()
+    await update.message.reply_text(f"/nueva_apuesta\n\n{quiniela}\n\n{quinigol}")
 
-async def resultados(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Obtener resultados")
-    result = obtener_resultado_jornada_actual_pd()
-    await update.message.reply_text(result, parse_mode=ParseMode.MARKDOWN)
+async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if responsabe_id is None:
+        logger.warning(f"Intento de apuesta sin jornada iniciada")
+        await update.message.reply_text(f"Atención: La jornada no está iniciada")
+        await update.message.reply_text(f"El respondable la debe iniciar con el comando /nueva_jornada")
+        return
 
-async def recibir_documento(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_name = update.effective_user.full_name
+    logger.info(f"Apuesta recibida de {user_name}")
+    texto_enviado = ' '.join(context.args)
+    if texto_enviado == "":
+        logger.warning(f"La apuesta no tiene texto")
+        await update.message.reply_text(f"Necesito que adjuntes la plantilla con los partidos")
+        return
+
+    quiniela, quinigol, mensaje = carga_apuestas_jugador(texto_enviado)
+
+    if len(quiniela) < 15 or len(quinigol) < 6:
+        logger.warning(f"Algunos de los resultados no está bien informado")
+        await update.message.reply_text(f"Uno de los resultados está vacío. Revísalo y reenvía por favor.")
+        return
+
     user_id = update.effective_user.id
-    document: Document = update.message.document
-    logger.info(f"Recibir documento")
+    global apuestas
 
-    if user_id not in esperando_archivo:
-        logger.warning(f"Falta primero /nueva_jornada")
-        await update.message.reply_text("Por favor, primero usa el comando /nueva_jornada.")
-        return
+    apuestas[user_id] = {
+        'quiniela': quiniela,
+        'quinigol': quinigol
+    }
 
-    if not document.file_name.endswith((".xlsx", ".xls")):
-        logger.warning(f"El archivo subido no es excel")
-        await update.message.reply_text("El archivo debe ser Excel (.xlsx o .xls).")
-        return
+    logger.info(f"Apuesta guardada")
+    print(apuestas)
 
-    file = await context.bot.get_file(document.file_id)
-    await file.download_to_drive(custom_path=document.file_name)
+    await update.message.reply_text(f"Recibido y guardado. Mucha suerte!")
+    bot = context.bot
+    await bot.send_message(chat_id=responsabe_id, text=f"El pronóstico de {user_name}:\n\n{mensaje}")
 
-    esperando_archivo.remove(user_id)
-    logger.info(f"Se descarga el fichero")
-    await update.message.reply_text("Recibido y guardado :)")
+
+async def actualiza(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Obtener resultados")
+    #result = obtener_resultados_puntuaciones()
+    await update.message.reply_text("")
+
+
 
 def main():
 
@@ -62,9 +86,8 @@ def main():
 
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("nueva_jornada", nueva_jornada))
-    app.add_handler(CommandHandler("resultados", resultados))
-    app.add_handler(CommandHandler("descargar_plantilla", descargar_plantilla))
-    app.add_handler(MessageHandler(filters.Document.ALL, recibir_documento))
+    app.add_handler(CommandHandler("nueva_apuesta", nueva_apuesta))
+    app.add_handler(CommandHandler("actualiza", actualiza))
 
     logger.info(f"Bot en marcha")
     app.run_polling()

@@ -22,7 +22,6 @@ pip3 install -r requirements.txt || true
 
 # Configurar las variables de entorno
 export TELEGRAM_BOT_TOKEN="${telegram_bot_token}"
-export FUTBALL_API_TOKEN="${futball_api_token}"
 
 # Ejecutar el bot
 python3 bot.py

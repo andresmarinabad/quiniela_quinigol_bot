@@ -24,7 +24,6 @@ data "template_file" "init" {
 
   vars = {
     telegram_bot_token = var.telegram_bot_token
-    futball_api_token = var.futball_api_token
   }
 }
 
