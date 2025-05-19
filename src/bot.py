@@ -30,7 +30,6 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     user_name = update.effective_user.full_name
-    user_id = update.effective_user.id
     config.logger.info(f"Apuesta recibida de {user_name}")
     config.logger.info(f"Apuesta recibida de {user_name}")
     texto_enviado = ' '.join(context.args)
@@ -39,7 +38,7 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Necesito que adjuntes la plantilla con los partidos")
         return
 
-    if user_id in config.apuestas:
+    if user_name in config.apuestas:
         await update.message.reply_text(f"Ya habías enviado una apuesta empanao!")
         user = await context.bot.get_chat(config.responsabe_id)
         await update.message.reply_text(f"Contacta por privado con {user.first_name} {user.last_name} si necesitas modificar algo.")
@@ -53,7 +52,7 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Uno de los resultados está vacío. Revísalo y reenvía por favor.")
         return
 
-    config.apuestas[user_id] = {
+    config.apuestas[user_name] = {
         'quiniela': quiniela,
         'quinigol': quinigol
     }

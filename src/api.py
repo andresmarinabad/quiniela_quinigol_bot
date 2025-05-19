@@ -43,7 +43,6 @@ def genera_mensaje_nueva_jornada():
             quinigol = f"{quinigol}\n{local.text.strip()} - {visitante.text.strip()}:"
             config.info_tabla['quinigol'].append(f'{local.text.strip()} - {visitante.text.strip()}')
 
-    #logger.debug("Se guarda el fichero output.xlsx")
     return quiniela, quinigol
 
 
