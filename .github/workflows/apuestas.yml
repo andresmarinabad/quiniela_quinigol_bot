@@ -1,0 +1,20 @@
+name: Procesar Quiniela y Quinigol
+
+on:
+  workflow_dispatch:
+    inputs:
+      apuestas_json:
+        description: "Objeto de apuestas en JSON"
+        required: true
+      partidos_json:
+        description: "Objeto de los partidos en JSON"
+        required: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mostrar objeto recibido
+        run: |
+          echo "${{ github.event.inputs.apuestas_json }}" > apuestas.json
+          cat apuestas.json
