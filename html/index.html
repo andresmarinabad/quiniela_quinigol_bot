@@ -6,12 +6,11 @@
   <title>Resultados Quiniela y Quinigol</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
   <style>
-    .color-1 { background-color: yellow; }
-    .color-2 { background-color: magenta; color: white; }
-    .color-3 { background-color: black; color: white; }
-    .color-4 { background-color: lightgray; }
-    table { margin-bottom: 3rem; }
-  </style>
+  .color-1 { color: yellow; }
+  .color-2 { color: magenta; }
+  .color-3 { color: black; }
+  .color-4 { color: lightgray; }
+</style>
 </head>
 <body>
   <section class="section">
@@ -35,82 +34,97 @@
   </section>
 
   <script>
-    async function cargarDatos() {
-      const apuestasResp = await fetch('apuestas.json');
-      const partidosResp = await fetch('partidos.json');
+  async function cargarDatos() {
+    const apuestasResp = await fetch('apuestas.json');
+    const partidosResp = await fetch('partidos.json');
 
-      const apuestas = await apuestasResp.json();
-      const partidos = await partidosResp.json();
+    const apuestas = await apuestasResp.json();
+    const partidos = await partidosResp.json();
 
-      const quinielaHead = document.getElementById('quiniela-head');
-      const quinielaBody = document.getElementById('quiniela-body');
-      const quinigolHead = document.getElementById('quinigol-head');
-      const quinigolBody = document.getElementById('quinigol-body');
+    const quinielaHead = document.getElementById('quiniela-head');
+    const quinielaBody = document.getElementById('quiniela-body');
+    const quinigolHead = document.getElementById('quinigol-head');
+    const quinigolBody = document.getElementById('quinigol-body');
 
-      const usuarios = Object.keys(apuestas);
+    const usuarios = Object.keys(apuestas);
 
-      function construirCabecera(headElem) {
-        const tr = document.createElement('tr');
-        const thPartido = document.createElement('th');
-        thPartido.textContent = "Partido";
-        thPartido.classList.add("has-text-centered");
-        tr.appendChild(thPartido);
+    function construirCabecera(headElem) {
+      const tr = document.createElement('tr');
+      const thPartido = document.createElement('th');
+      thPartido.textContent = "Partido";
+      thPartido.classList.add("has-text-centered");
+      tr.appendChild(thPartido);
 
-        usuarios.forEach(uid => {
-          const th = document.createElement('th');
-          th.textContent = uid;
-          th.classList.add("has-text-centered");
-          tr.appendChild(th);
-        });
+      usuarios.forEach(uid => {
+        const th = document.createElement('th');
+        th.textContent = uid;
+        th.classList.add("has-text-centered");
+        tr.appendChild(th);
+      });
 
-        headElem.appendChild(tr);
-      }
-
-      function construirCuerpo(tipo, partidosLista, bodyElem, umbrales) {
-        for (let i = 0; i < partidosLista.length; i++) {
-          const tr = document.createElement('tr');
-          const tdPartido = document.createElement('td');
-          tdPartido.textContent = partidosLista[i] || `Partido ${i + 1}`;
-          tr.appendChild(tdPartido);
-
-          const conteo = {};
-
-          usuarios.forEach(uid => {
-            const apuesta = apuestas[uid][tipo]?.[i];
-            if (apuesta) conteo[apuesta] = (conteo[apuesta] || 0) + 1;
-          });
-
-          usuarios.forEach(uid => {
-            const td = document.createElement('td');
-            const apuesta = apuestas[uid][tipo]?.[i] || "-";
-            td.textContent = apuesta;
-
-            const cantidad = conteo[apuesta] || 0;
-            if (cantidad >= (umbrales.gris || Infinity)) {
-              td.classList.add('color-4');
-            } else if (cantidad >= (umbrales.negro || 0)) {
-              td.classList.add('color-3');
-            } else if (cantidad >= (umbrales.magenta || 0)) {
-              td.classList.add('color-2');
-            } else {
-              td.classList.add('color-1');
-            }
-
-            tr.appendChild(td);
-          });
-
-          bodyElem.appendChild(tr);
-        }
-      }
-
-      construirCabecera(quinielaHead);
-      construirCabecera(quinigolHead);
-
-      construirCuerpo('quiniela', partidos.quiniela, quinielaBody, { gris: 5, negro: 3, magenta: 2 });
-      construirCuerpo('quinigol', partidos.quinigol, quinigolBody, { gris: 4, magenta: 2 });
+      headElem.appendChild(tr);
     }
 
-    cargarDatos();
-  </script>
+    function construirCuerpo(tipo, partidosLista, bodyElem) {
+      for (let i = 0; i < partidosLista.length; i++) {
+        const tr = document.createElement('tr');
+        const tdPartido = document.createElement('td');
+        tdPartido.textContent = partidosLista[i] || `Partido ${i + 1}`;
+        tr.appendChild(tdPartido);
+
+        const conteo = {};
+
+        usuarios.forEach(uid => {
+          const apuesta = apuestas[uid][tipo]?.[i];
+          if (apuesta) conteo[apuesta] = (conteo[apuesta] || 0) + 1;
+        });
+
+        usuarios.forEach(uid => {
+          const td = document.createElement('td');
+          const apuesta = apuestas[uid][tipo]?.[i] || "-";
+          td.textContent = apuesta;
+
+          const cantidad = conteo[apuesta] || 0;
+
+          // Lógica de coloreado específica para quiniela y quinigol
+          if (cantidad === 1) {
+            td.classList.add('color-1'); // Amarillo
+          } else if (cantidad === 2) {
+            td.classList.add('color-2'); // Magenta
+          } else if (cantidad === 3) {
+            if (tipo === 'quiniela') {
+              td.classList.add('color-3'); // Negro
+            } else if (tipo === 'quinigol') {
+              td.classList.add('color-2'); // Magenta
+            }
+          } else if (cantidad === 4) {
+            if (tipo === 'quiniela') {
+              td.classList.add('color-3'); // Negro
+            } else if (tipo === 'quinigol') {
+              td.classList.add('color-4'); // Gris
+            }
+          } else if ((tipo === 'quiniela' && cantidad >= 5 && cantidad <= 6) ||
+                     (tipo === 'quinigol' && cantidad >= 5 && cantidad <= 6)) {
+            td.classList.add('color-4'); // Gris
+          }
+
+          td.title = `${cantidad} ${cantidad === 1 ? 'usuario' : 'usuarios'}`;
+          tr.appendChild(td);
+        });
+
+        bodyElem.appendChild(tr);
+      }
+    }
+
+    construirCabecera(quinielaHead);
+    construirCabecera(quinigolHead);
+
+    construirCuerpo('quiniela', partidos.quiniela, quinielaBody);
+    construirCuerpo('quinigol', partidos.quinigol, quinigolBody);
+  }
+
+  cargarDatos();
+</script>
+
 </body>
 </html>
