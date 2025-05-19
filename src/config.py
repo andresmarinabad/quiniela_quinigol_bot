@@ -12,7 +12,7 @@ class Config:
         users = os.getenv("USERS")
         self.usuarios_permitidos = [int(x) for x in users.split(',') if x.strip().isdigit()]
 
-        self.admin = os.getenv("ADMIN")
+        self.admin = int(os.getenv("ADMIN"))
 
         # Config logger for CloudWatch
         self.logger = logging.getLogger("quiniela_quinigol_bot")

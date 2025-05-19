@@ -82,7 +82,7 @@ async def hola(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.full_name
     user_id = update.effective_user.id
     config.logger.info(f"Se presenta el usuario {user_name}")
-    await update.message.reply_text(chat_id=config.admin, text=f"Solicita acceso el usuario {user_name} con id {user_id}")
+    await context.bot.send_message(chat_id=config.admin, text=f"Solicita acceso el usuario {user_name} con id {user_id}")
     render_apuestas_html()
 
 

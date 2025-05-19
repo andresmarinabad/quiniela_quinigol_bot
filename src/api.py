@@ -60,8 +60,8 @@ def render_apuestas_html():
     data = {
         "ref": 'main',
         "inputs": {
-            "apuestas_json": json.dumps(config.apuestas_json),
-            "partidos_json": json.dumps(config.partidos_json)
+            "apuestas_json": json.dumps(config.apuestas),
+            "partidos_json": json.dumps(config.info_tabla)
         }
     }
 
