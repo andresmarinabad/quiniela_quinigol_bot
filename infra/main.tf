@@ -23,7 +23,9 @@ data "template_file" "init" {
   template = file("${path.module}/user_data.tpl")
 
   vars = {
-    telegram_bot_token = var.telegram_bot_token
+    telegram_bot_token = var.telegram_bot_token,
+    users = var.users,
+    admin = var.admin
   }
 }
 
