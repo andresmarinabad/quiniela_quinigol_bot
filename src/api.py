@@ -1,4 +1,4 @@
-
+import json
 import requests
 from bs4 import BeautifulSoup
 
@@ -45,3 +45,29 @@ def genera_mensaje_nueva_jornada():
 
     #logger.debug("Se guarda el fichero output.xlsx")
     return quiniela, quinigol
+
+
+def render_apuestas_html():
+
+    url = f"https://api.github.com/repos/{config.REPO}/actions/workflows/{config.WORKFLOW_FILENAME}/dispatches"
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {config.GITHUB_TOKEN}",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    data = {
+        "ref": 'main',
+        "inputs": {
+            "apuestas_json": json.dumps(config.apuestas_json),
+            "partidos_json": json.dumps(config.partidos_json)
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 204:
+        return True
+    else:
+        return False

@@ -25,5 +25,9 @@ class Config:
             'quinigol': []
         }
 
+        self.GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+        self.REPO = os.getenv("REPO")
+        self.WORKFLOW_FILENAME = os.getenv("WORKFLOW_FILENAME")
+
 
 config = Config()

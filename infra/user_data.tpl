@@ -24,6 +24,9 @@ pip3 install -r requirements.txt || true
 export TELEGRAM_BOT_TOKEN="${telegram_bot_token}"
 export USERS="${users}"
 export ADMIN="${admin}"
+export GITHUB_TOKEN="${github_token}"
+export REPO="${repo}"
+export WORKFLOW_FILENAME="${workflow}"
 
 # Ejecutar el bot
 python3 bot.py

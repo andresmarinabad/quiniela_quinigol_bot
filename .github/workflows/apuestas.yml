@@ -14,7 +14,21 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - name: Mostrar objeto recibido
+      - name: Check out the repository
+      - uses: actions/checkout@v3
+
+      - name: Configurar GitHub Pages
+      - uses: actions/configure-pages@v3
+
+      - name: Guardar apuestas y partidos
         run: |
-          echo "${{ github.event.inputs.apuestas_json }}" > apuestas.json
-          cat apuestas.json
+          echo '${{ inputs.apuestas_json }}' > html/apuestas.json
+          echo '${{ inputs.partidos_json }}' > html/partidos.json
+
+      - name: Subir archivos a GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: html
+
+      - name: Desplegar en GitHub Pages
+        uses: actions/deploy-pages@v4

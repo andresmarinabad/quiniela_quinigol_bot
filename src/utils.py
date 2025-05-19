@@ -1,5 +1,4 @@
 import re
-import json
 from collections import defaultdict
 
 from functools import wraps
@@ -41,7 +40,7 @@ def carga_apuestas_jugador(texto):
 
     # QUINIELA: resultado debe ser 1, X o 2
     partidos_quiniela = re.findall(
-        r"([A-Za-zÁÉÍÓÚÑáéíóúü0-9.\- ]+ - [A-Za-zÁÉÍÓÚÑáéíóúü0-9.\- ]+):\s*([12Xx])", quiniela_part)
+        r"([A-Za-zÁÉÍÓÚÑáéíóúü0-9.\- ]+ - [A-Za-zÁÉÍÓÚÑáéíóúü0-9.\- ]+):\s*([12Xx\-])", quiniela_part)
 
     # QUINIGOL: resultado tipo n-n o M-n o n-M o M-M
     partidos_quinigol = re.findall(
@@ -56,14 +55,6 @@ def carga_apuestas_jugador(texto):
         quinigol.append((result.upper()))
 
     return quiniela, quinigol, f'{mensaje_quiniela}\n\n{mensaje_quinigol}'
-
-
-def render_apuestas_html():
-    partidos_json = json.dumps(config.info_tabla)
-    apuestas_json = json.dumps(config.apuestas)
-
-    url = f"https://api.github.com/repos/{REPO}/actions/workflows/{WORKFLOW_FILE_NAME}/dispatches"
-
 
 
 def asignar_puntuaciones(analisis_partidos, todas_las_personas):

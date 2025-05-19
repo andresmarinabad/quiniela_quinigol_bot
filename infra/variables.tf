@@ -12,3 +12,18 @@ variable "admin" {
   type = string
   description = "Admin Telegram ID"
 }
+
+variable "github_token" {
+  type = string
+  description = "Github token repo workflow"
+}
+
+variable "repo" {
+  type = string
+  description = "username/repo"
+}
+
+variable "workflow" {
+  type = string
+  description = "workflow.yml"
+}

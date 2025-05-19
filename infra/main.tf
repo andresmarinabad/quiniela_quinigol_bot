@@ -25,7 +25,10 @@ data "template_file" "init" {
   vars = {
     telegram_bot_token = var.telegram_bot_token,
     users = var.users,
-    admin = var.admin
+    admin = var.admin,
+    github_token = var.github_token,
+    repo = var.repo,
+    workflow = var.workflow
   }
 }
 

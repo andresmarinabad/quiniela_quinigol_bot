@@ -1,6 +1,6 @@
 
-from api import genera_mensaje_nueva_jornada
-from utils import carga_apuestas_jugador, render_apuestas_html
+from api import genera_mensaje_nueva_jornada, render_apuestas_html
+from utils import carga_apuestas_jugador
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
@@ -65,10 +65,10 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if len(config.apuestas) == 6:
         await context.bot.send_message(chat_id=config.responsabe_id, text=f"Ya he recibido todas las apuestas")
-        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizando los resultados en html...")
-        render_apuestas_html()
-        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Página: https://andresmarinabad.github.io/quiniela_quinigol_bot")
-
+        status = render_apuestas_html()
+        if status:
+            await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizando los resultados en html...")
+            await context.bot.send_message(chat_id=config.responsabe_id, text=f"Página: https://andresmarinabad.github.io/quiniela_quinigol_bot")
 
 
 @verificar_usuario_permitido
@@ -83,6 +83,7 @@ async def hola(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     config.logger.info(f"Se presenta el usuario {user_name}")
     await update.message.reply_text(chat_id=config.admin, text=f"Solicita acceso el usuario {user_name} con id {user_id}")
+    render_apuestas_html()
 
 
 
