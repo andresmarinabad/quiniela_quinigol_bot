@@ -1,11 +1,12 @@
 import re
-from collections import defaultdict
 
 from functools import wraps
 from telegram import Update
 from telegram.ext import ContextTypes
+from collections import defaultdict
 
 from config import config
+from api import obtener_resultados_reales
 
 
 def verificar_usuario_permitido(func):
@@ -57,60 +58,126 @@ def carga_apuestas_jugador(texto):
     return quiniela, quinigol, f'{mensaje_quiniela}\n\n{mensaje_quinigol}'
 
 
-def asignar_puntuaciones(analisis_partidos, todas_las_personas):
-    puntuaciones = defaultdict(float)
 
-    # Asegurar que todos empiecen con 0 puntos
-    for persona in todas_las_personas:
-        puntuaciones[persona] = 0.0
+def calcular_puntuaciones() -> dict:
 
-    for partido in analisis_partidos:
-        # --- Quiniela ---
-        quiniela = partido['quiniela_aciertos']
-        n_quiniela = len(quiniela)
+    #apuestas = config.apuestas
 
-        if n_quiniela == 1:
-            puntos_q = 3
-        elif n_quiniela == 2:
-            puntos_q = 2
-        elif 3 <= n_quiniela <= 4:
-            puntos_q = 1.5
-        elif n_quiniela >= 5:
-            puntos_q = 1
+    apuestas = {
+      "Juanra": {
+        "quiniela": ["1", "1", "1", "1", "1", "1", "X", "1", "2", "1", "2", "X", "1", "1", "-"],
+        "quinigol": ["M-1", "M-1", "2-2", "2-2", "1-M", "1-2"]
+      },
+      "Keysals": {
+        "quiniela": ["2", "X", "1", "X", "1", "1", "X", "2", "2", "1", "2", "1", "2", "1", "-"],
+        "quinigol": ["2-M", "1-0", "1-M", "1-1", "1-M", "0-0"]
+      },
+      "Luisme": {
+        "quiniela": ["2", "X", "1", "X", "1", "1", "2", "2", "2", "1", "2", "1", "X", "1", "-"],
+        "quinigol": ["2-2", "M-2", "1-2", "1-2", "1-M", "0-1"]
+      },
+      "Serraba": {
+        "quiniela": ["2", "X", "1", "X", "1", "1", "1", "X", "X", "1", "2", "1", "2", "1", "-"],
+        "quinigol": ["1-1", "M-1", "1-1", "1-1", "1-1", "1-1"]
+      },
+      "Nacho": {
+        "quiniela": ["X", "2", "1", "X", "1", "X", "1", "2", "2", "1", "X", "2", "1", "1", "-"],
+        "quinigol": ["1-M", "1-1", "1-2", "1-2", "1-M", "1-2"]
+      },
+      "Edu": {
+        "quiniela": ["2", "2", "1", "2", "1", "1", "2", "1", "2", "1", "2", "1", "2", "1", "2-M"],
+        "quinigol": ["1-2", "M-0", "1-2", "2-0", "1-M", "0-2"]
+      }
+}
+
+    resultados = {
+      "quiniela": [
+        "2",
+        "2",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "X",
+        "2",
+        "1",
+        "X",
+        "2",
+        "2",
+        "2",
+        "0-2"
+      ],
+      "quinigol": [
+        "0-1",
+        "2-1",
+        "2-0",
+        "2-2",
+        "0-2",
+        "0-2"
+      ]
+    }
+
+    usuarios = list(apuestas.keys())
+    puntuaciones_quiniela = {u: 0 for u in usuarios}
+    puntuaciones_quinigol = {u: 0 for u in usuarios}
+
+    # Calcular puntos para QUINIELA
+    for i, resultado_real in enumerate(resultados['quiniela']):
+        aciertos = [u for u in usuarios if apuestas[u]['quiniela'][i] == resultado_real]
+        n = len(aciertos)
+
+        if n in [5, 6]:
+            puntos = 1
+        elif n in [3, 4]:
+            puntos = 1.5
+        elif n == 2:
+            puntos = 2
+        elif n == 1:
+            puntos = 3
         else:
-            puntos_q = 0
+            puntos = 0
 
-        for persona in quiniela:
-            puntuaciones[persona] += puntos_q
+        for u in aciertos:
+            puntuaciones_quiniela[u] += puntos
 
-        # --- Quinigol ---
-        quinigol = partido['quinigol_aciertos']
-        n_quinigol = len(quinigol)
+    # Calcular puntos para QUINIGOL
+    for i, resultado_real in enumerate(resultados['quinigol']):
+        aciertos = [u for u in usuarios if apuestas[u]['quinigol'][i] == resultado_real]
+        n = len(aciertos)
 
-        if n_quinigol == 1:
-            puntos_gol = 3
-        elif 2 <= n_quinigol <= 3:
-            puntos_gol = 2
-        elif 4 <= n_quinigol <= 6:
-            puntos_gol = 1
+        if n in [4, 5, 6]:
+            puntos = 1
+        elif n in [2, 3]:
+            puntos = 2
+        elif n == 1:
+            puntos = 3
         else:
-            puntos_gol = 0
+            puntos = 0
 
-        for persona in quinigol:
-            puntuaciones[persona] += puntos_gol
+        for u in aciertos:
+            puntuaciones_quinigol[u] += puntos
 
-    # --- Bonus al final: Quiniela global ---
-    if puntuaciones:
-        max_puntos = max(puntuaciones.values())
-        min_puntos = min(puntuaciones.values())
+    # BONUS Quiniela: al que más +1, al que menos -1 (si no hay empate)
+    max_q = max(puntuaciones_quiniela.values())
+    min_q = min(puntuaciones_quiniela.values())
 
-        ganadores = [p for p, pts in puntuaciones.items() if pts == max_puntos]
-        perdedores = [p for p, pts in puntuaciones.items() if pts == min_puntos]
+    usuarios_max = [u for u, p in puntuaciones_quiniela.items() if p == max_q]
+    usuarios_min = [u for u, p in puntuaciones_quiniela.items() if p == min_q]
 
-        if len(ganadores) == 1:
-            puntuaciones[ganadores[0]] += 1
+    if len(usuarios_max) == 1 and len(usuarios_min) == 1:
+        puntuaciones_quiniela[usuarios_max[0]] += 1
+        puntuaciones_quiniela[usuarios_min[0]] -= 1
 
-        if len(perdedores) == 1:
-            puntuaciones[perdedores[0]] -= 1
+    # Resultado final
+    resultado_final = {}
+    for u in usuarios:
+        resultado_final[u] = {
+            "quiniela": puntuaciones_quiniela[u],
+            "quinigol": puntuaciones_quinigol[u],
+            "puntos": puntuaciones_quiniela[u] + puntuaciones_quinigol[u]
+        }
 
-    return dict(puntuaciones)
+    return resultado_final
+
+print(calcular_puntuaciones())

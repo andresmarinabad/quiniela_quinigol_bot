@@ -1,9 +1,10 @@
+import time
 
-from api import genera_mensaje_nueva_jornada, render_apuestas_html
+from api import genera_mensaje_nueva_jornada, render_apuestas_html, reiniciar_instancia
 from utils import carga_apuestas_jugador
 
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, ContextTypes, CallbackQueryHandler
 
 from config import config
 from utils import verificar_usuario_permitido
@@ -11,6 +12,10 @@ from utils import verificar_usuario_permitido
 
 @verificar_usuario_permitido
 async def nueva_jornada(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if config.responsabe_id is not None:
+        user = await context.bot.get_chat(config.responsabe_id)
+        await update.message.reply_text(f"La jornada ya ha sido iniciada por {user.first_name} {user.last_name}")
+        return
 
     config.apuestas = {}
     config.responsabe_id = update.effective_user.id
@@ -20,6 +25,8 @@ async def nueva_jornada(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"A continuación te adjunto la plantilla con la información que necesito que cada uno me envie por privado")
     quiniela, quinigol = genera_mensaje_nueva_jornada()
     await update.message.reply_text(f"/nueva_apuesta\n\n{quiniela}\n\n{quinigol}")
+    await update.message.reply_text(f"Utiliza el comando /reiniciar al final de la jornada para resetearme")
+
 
 @verificar_usuario_permitido
 async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -64,10 +71,10 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if len(config.apuestas) == 6:
         await context.bot.send_message(chat_id=config.responsabe_id, text=f"Ya he recibido todas las apuestas")
-        status = render_apuestas_html()
-        if status:
-            await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizando los resultados en html...")
-            await context.bot.send_message(chat_id=config.responsabe_id, text=f"Página: https://andresmarinabad.github.io/quiniela_quinigol_bot")
+        render_apuestas_html()
+        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizando los resultados en html...")
+        time.sleep(15)
+        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Visita https://andresmarinabad.github.io/quiniela_quinigol_bot para ver todas las apuestas")
 
 
 @verificar_usuario_permitido
@@ -82,8 +89,43 @@ async def hola(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     config.logger.info(f"Se presenta el usuario {user_name}")
     await context.bot.send_message(chat_id=config.admin, text=f"Solicita acceso el usuario {user_name} con id {user_id}")
-    render_apuestas_html()
 
+
+@verificar_usuario_permitido
+async def reiniciar(update: Update, context: CallbackContext):
+    if config.responsabe_id is None:
+        await update.message.reply_text(f"Buen intento. Pero va a ser que no")
+        return
+
+    user_id = update.effective_user.id
+    if config.responsabe_id != user_id:
+        await update.message.reply_text(f"HAHAHA, No tienes poder aquí!")
+        return
+
+    else:
+        keyboard = [
+            [
+                InlineKeyboardButton("Con gran pesar, Sí", callback_data='confirmar_si'),
+                InlineKeyboardButton("No", callback_data='confirmar_no')
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(
+            "¿Estás seguro de que quieres reiniciar tu bot favorito?",
+            reply_markup=reply_markup
+        )
+
+
+async def manejar_confirmacion(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+
+    if query.data == 'confirmar_si':
+        await query.edit_message_text("Adiós mundo cruel!")
+        reiniciar_instancia()
+    elif query.data == 'confirmar_no':
+        await query.edit_message_text("❌ Cancelado. Tu bot está a salvo.")
 
 
 def main():
@@ -97,6 +139,9 @@ def main():
     app.add_handler(CommandHandler("nueva_jornada", nueva_jornada))
     app.add_handler(CommandHandler("nueva_apuesta", nueva_apuesta))
     app.add_handler(CommandHandler("puntuaciones", puntuaciones))
+    app.add_handler(CommandHandler("reiniciar", reiniciar))
+    app.add_handler(CallbackQueryHandler(manejar_confirmacion, pattern='^confirmar_'))
+
 
     config.logger.info(f"Bot en marcha")
     app.run_polling()
