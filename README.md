@@ -9,22 +9,22 @@ This project is a Telegram bot designed for a private group of friends to manage
 
 ```commandline
 ├── html
-│ └── index.html # Final rendered scoreboard (GitHub Pages)
+│   └── index.html # Final rendered scoreboard (GitHub Pages)
 ├── infra
-│ ├── locals.tf
-│ ├── main.tf
-│ ├── provider.tf
-│ ├── terraform.tfvars
-│ ├── user_data.tpl # EC2 bootstrap script
-│ └── variables.tf
+│   ├── locals.tf
+│   ├── main.tf
+│   ├── provider.tf
+│   ├── terraform.tfvars
+│   ├── user_data.tpl # EC2 bootstrap script
+│   └── variables.tf
 ├── LICENSE
 ├── README.md # You're here!
 └── src
-├── api.py # Scraper/API layer for match results
-├── bot.py # Main Telegram bot logic
-├── config.py # Environment config and user list
-├── requirements.txt
-└── utils.py # Betting and scoring logic
+    ├── api.py # Scraper/API layer for match results
+    ├── bot.py # Main Telegram bot logic
+    ├── config.py # Environment config and user list
+    ├── requirements.txt
+    └── utils.py # Betting and scoring logic
 ```
 
 
