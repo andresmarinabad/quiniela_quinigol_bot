@@ -26,8 +26,11 @@ class Config:
         }
 
         self.GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-        self.REPO = os.getenv("REPO")
-        self.WORKFLOW_FILENAME = os.getenv("WORKFLOW_FILENAME")
+        self.render_action = os.getenv("RENDER_ACTION")
+        self.terminate_action = os.getenv("TERMINATE_ACTION")
+
+        self.url_quiniela = "https://www.combinacionganadora.com/quiniela/"
+        self.url_quinigol = "https://www.combinacionganadora.com/quinigol/"
 
 
 config = Config()

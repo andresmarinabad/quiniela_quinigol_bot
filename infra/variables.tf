@@ -18,12 +18,12 @@ variable "github_token" {
   description = "Github token repo workflow"
 }
 
-variable "repo" {
+variable "terminate_action" {
   type = string
-  description = "username/repo"
+  description = "Terminate EC2 instance"
 }
 
-variable "workflow" {
+variable "render_action" {
   type = string
-  description = "workflow.yml"
+  description = "Render HTML action"
 }

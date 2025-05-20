@@ -4,16 +4,21 @@ from bs4 import BeautifulSoup
 
 from config import config
 
+apuestas_headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+github_headers = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"Bearer {config.GITHUB_TOKEN}",
+    "X-GitHub-Api-Version": "2022-11-28"
+}
+
 
 def obtener_resultados_reales():
-    url_quiniela = "https://www.combinacionganadora.com/quiniela/"
-    url_quinigol = "https://www.combinacionganadora.com/quinigol/"
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
 
-    response_quiniela = requests.get(url_quiniela, headers=headers)
-    response_quinigol = requests.get(url_quinigol, headers=headers)
+    response_quiniela = requests.get(config.url_quiniela, headers=apuestas_headers)
+    response_quinigol = requests.get(config.url_quinigol, headers=apuestas_headers)
     response_quiniela.raise_for_status()
     response_quinigol.raise_for_status()
 
@@ -73,14 +78,9 @@ def obtener_resultados_reales():
 
 
 def genera_mensaje_nueva_jornada():
-    url_quiniela = "https://www.combinacionganadora.com/quiniela/"
-    url_quinigol = "https://www.combinacionganadora.com/quinigol/"
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
 
-    response_quiniela = requests.get(url_quiniela, headers=headers)
-    response_quinigol = requests.get(url_quinigol, headers=headers)
+    response_quiniela = requests.get(config.url_quiniela, headers=apuestas_headers)
+    response_quinigol = requests.get(config.url_quinigol, headers=apuestas_headers)
     response_quiniela.raise_for_status()
     response_quinigol.raise_for_status()
 
@@ -115,14 +115,6 @@ def genera_mensaje_nueva_jornada():
 
 def render_apuestas_html():
 
-    url = f"https://api.github.com/repos/{config.REPO}/actions/workflows/{config.WORKFLOW_FILENAME}/dispatches"
-
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {config.GITHUB_TOKEN}",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-
     data = {
         "ref": 'main',
         "inputs": {
@@ -131,7 +123,7 @@ def render_apuestas_html():
         }
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(config.render_action, headers=github_headers, json=data)
 
     if response.status_code == 204:
         return True
@@ -140,15 +132,7 @@ def render_apuestas_html():
 
 def reiniciar_instancia():
 
-    url = f"https://api.github.com/repos/{config.REPO}/actions/workflows/terminate_instance.yml/dispatches"
-
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {config.GITHUB_TOKEN}",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-
-    response = requests.post(url, headers=headers)
+    response = requests.post(config.terminate_action, headers=github_headers)
 
     if response.status_code == 204:
         return True

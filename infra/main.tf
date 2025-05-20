@@ -27,9 +27,8 @@ data "template_file" "init" {
     users = var.users,
     admin = var.admin,
     github_token = var.github_token,
-    repo = var.repo,
-    workflow = var.workflow
-  }
+    terminate_action = var.terminate_action,
+    render_action = var.render_action
 }
 
 data "aws_ami" "ubuntu" {

@@ -1,7 +1,7 @@
 import time
 
 from api import genera_mensaje_nueva_jornada, render_apuestas_html, reiniciar_instancia
-from utils import carga_apuestas_jugador
+from utils import carga_apuestas_jugador, calcular_puntuaciones
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, ContextTypes, CallbackQueryHandler
@@ -72,16 +72,17 @@ async def nueva_apuesta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(config.apuestas) == 6:
         await context.bot.send_message(chat_id=config.responsabe_id, text=f"Ya he recibido todas las apuestas")
         render_apuestas_html()
-        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizando los resultados en html...")
+        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Renderizo los resultados en html...")
         time.sleep(15)
-        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Visita https://andresmarinabad.github.io/quiniela_quinigol_bot para ver todas las apuestas")
+        await context.bot.send_message(chat_id=config.responsabe_id, text=f"Ya tienes las apuestas en la mini app")
 
 
 @verificar_usuario_permitido
 async def puntuaciones(update: Update, context: ContextTypes.DEFAULT_TYPE):
     config.logger.info(f"Obtener resultados")
-    #result = obtener_resultados_puntuaciones()
-    await update.message.reply_text("")
+    mensaje = calcular_puntuaciones()
+    await update.message.reply_text("Estas son las puntuaciones actuales según los partidos que ya han finalizado:")
+    await update.message.reply_text(f"{mensaje}")
 
 
 async def hola(update: Update, context: ContextTypes.DEFAULT_TYPE):
