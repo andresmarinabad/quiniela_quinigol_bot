@@ -1,0 +1,7 @@
+# Tipo: feat, fix, docs, style, refactor, test, chore
+# Ejemplo:
+# feat(api): agregar validación de entradas
+
+<tipo>(<componente>): <mensaje corto>
+
+

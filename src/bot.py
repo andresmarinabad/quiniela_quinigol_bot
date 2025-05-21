@@ -86,6 +86,8 @@ async def puntuaciones(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def hola(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    genera_mensaje_nueva_jornada()
+    render_apuestas_html()
     user_name = update.effective_user.full_name
     user_id = update.effective_user.id
     config.logger.info(f"Se presenta el usuario {user_name}")
