@@ -21,7 +21,7 @@ jobs:
         with:
           release-type: simple
           token: ${{ secrets.RELEASE_PLEASE }}
-      # Solo si se creó un nuevo release
+      
       - name: Zip src/ folder
         if: steps.release.outputs.release_created == 'true'
         run: zip -r src.zip src/
