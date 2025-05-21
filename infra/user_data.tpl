@@ -10,10 +10,11 @@ apt-get install -y git python3 python3-pip
 cd /home/ubuntu
 
 # Clonar el repositorio de GitHub
-git clone https://github.com/andresmarinabad/quiniela_quinigol_bot.git
+wget -q https://github.com/andresmarinabad/quiniela_quinigol_bot/archive/refs/tags/v"${code_release}".zip
+unzip -q v"${code_release}".zip
 
 # Cambiar al directorio de la aplicación y eliminar el directorio 'infra'
-cd quiniela_quinigol_bot
+cd quiniela_quinigol_bot-"${code_release}"/
 rm -rf infra
 
 # Instalar dependencias de Python desde requirements.txt
