@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/andresmarinabad/quiniela_quinigol_bot/compare/v1.0.0...v1.1.0) (2025-05-21)
+
+
+### Features
+
+* **release:** pack src python for release only code ([64f36e2](https://github.com/andresmarinabad/quiniela_quinigol_bot/commit/64f36e28ba9ff97240bcf850d06495aba6145369))
+
 ## 1.0.0 (2025-05-21)
 
 
