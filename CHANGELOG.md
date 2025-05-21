@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/andresmarinabad/quiniela_quinigol_bot/compare/v1.0.0...v1.0.1) (2025-05-21)
+
+
+### Bug Fixes
+
+* **workflow:** fix release action ([fb0847b](https://github.com/andresmarinabad/quiniela_quinigol_bot/commit/fb0847b5a9ce66b5d7884e9b715c06981600a279))
+
 ## 1.0.0 (2025-05-21)
 
 
