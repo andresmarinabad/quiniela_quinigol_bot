@@ -1,0 +1,23 @@
+"updates":
+- "directory": "/"
+  "labels":
+  - "patch"
+  "open-pull-requests-limit": 5
+  "package-ecosystem": "pip"
+  "schedule":
+    "interval": "monthly"
+- "directory": "/"
+  "labels":
+  - "patch"
+  "open-pull-requests-limit": 5
+  "package-ecosystem": "terraform"
+  "schedule":
+    "interval": "monthly"
+- "directory": "/"
+  "labels":
+  - "patch"
+  "open-pull-requests-limit": 5
+  "package-ecosystem": "github-actions"
+  "schedule":
+    "interval": "monthly"
+"version": 2
