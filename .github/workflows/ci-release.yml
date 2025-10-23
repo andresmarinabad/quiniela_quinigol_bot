@@ -1,0 +1,16 @@
+"jobs":
+  "release":
+    "if": "github.event.pull_request.merged == true"
+    "secrets":
+      "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
+    "uses": "CodeForgeGuild/ci-actions/.github/workflows/release.yml@v0"
+"name": "CI Release Version"
+"on":
+  "pull_request":
+    "branches":
+    - "main"
+    "types":
+    - "closed"
+"permissions":
+  "contents": "write"
+  "pull-requests": "read"
